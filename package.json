@@ -1,0 +1,168 @@
+{
+    "name": "acpaas-portal-crm-subscriber",
+    "version": "0.0.21",
+    "description": "Module that subscribes to the event handler CRM events. It converts the CRM tenders to news articles",
+    "main": "app/routes/index.js",
+    "scripts": {
+        "test": "NODE_ENV=test ./node_modules/.bin/istanbul cover --dir ./coverage ./node_modules/.bin/_mocha -- -R spec -t 15000 --recursive --slow 2"
+    },
+    "keywords": [
+        "acpaas-portal",
+        "crm",
+        "eventhandler",
+        "event"
+    ],
+    "wcmModule": {
+        "frontend": null,
+        "backend": {
+            "dirPath": "app/",
+            "variables": [
+                {
+                    "group": "Variables",
+                    "key": "subscriberConfig",
+                    "accordion": true,
+                    "variables": [
+                        {
+                            "label": "Event handler domain",
+                            "description": "Event handler API domain.",
+                            "key": "apiDomain",
+                            "value": "",
+                            "type": "text",
+                            "required": true
+                        },
+                        {
+                            "label": "Namespace",
+                            "description": "Eventhandler namespace to subscribe to.",
+                            "key": "namespace",
+                            "value": "",
+                            "type": "text",
+                            "required": true
+                        },
+                        {
+                            "label": "Topic",
+                            "description": "The topic to subscribe to.",
+                            "key": "topic",
+                            "value": "",
+                            "type": "text",
+                            "required": true
+                        },
+                        {
+                            "label": "Subscription name",
+                            "description": "Name of the subscription to register.",
+                            "key": "subscriptionName",
+                            "value": "",
+                            "type": "text",
+                            "required": true
+                        },
+                        {
+                            "label": "Content-type safe-label",
+                            "description": "Safe-label of the news-item content-type",
+                            "key": "contentType",
+                            "value": "",
+                            "type": "text",
+                            "required": true
+                        },
+                        {
+                            "label": "Owner key",
+                            "description": "The namespace to send the events (usually 'wcm')",
+                            "key": "ownerKey",
+                            "value": "",
+                            "type": "text",
+                            "required": true
+                        },
+                        {
+                            "label": "Event handler apikey",
+                            "description": "You're Event handler api-store apikey",
+                            "key": "apikey",
+                            "value": "",
+                            "type": "text",
+                            "required": true
+                        },
+                        {
+                          "label": "WCM apikey",
+                          "description": "You're WCM api-store apikey",
+                          "key": "wcmApikey",
+                          "value": "",
+                          "type": "text"
+                        }
+                    ]
+                },
+                {
+                    "group": "Content",
+                    "key": "contentConfig",
+                    "accordion": true,
+                    "variables": [
+                        {
+                            "label": "News item prefix",
+                            "description": "News item prefix",
+                            "key": "contentPrefix",
+                            "value": "",
+                            "type": "richtext",
+                            "required": true
+                        },
+                        {
+                            "label": "News item suffix",
+                            "description": "Suffix of the news item",
+                            "key": "addUrl",
+                            "value": "",
+                            "type": "richtext",
+                            "required": true
+                        },
+                        {
+                            "label": "Banner image",
+                            "description": "Banner image",
+                            "key": "defaultBannerImage",
+                            "value": {},
+                            "type": "image",
+                            "required": true
+                        },
+                        {
+                            "label": "Thumbnail image",
+                            "description": "Thumbnail image",
+                            "key": "defaultThumbnailImage",
+                            "value": {},
+                            "type": "image",
+                            "required": true
+                        }
+                    ]
+                }
+            ],
+            "routeDirPaths": [
+                "app/routes/"
+            ]
+        }
+    },
+    "author": "Jeroen Valcke",
+    "license": "MIT",
+    "dependencies": {
+        "lodash": "~4.17.4",
+        "q": "~1.5.0",
+        "request": "~2.81.0",
+        "rootpath": "~0.1.2"
+    },
+    "devDependencies": {
+        "@district01/eslint-config": "~1.0.0",
+        "apidoc-swagger": "git+https://github.com/JvJefke/apidoc-swagger.git",
+        "chai": "~3.5.0",
+        "eslint": "~3.19.0",
+        "gulp": "~3.9.1",
+        "gulp-angular-templatecache": "~2.0.0",
+        "gulp-apidoc": "~0.2.0",
+        "gulp-apidoc-swagger": "~0.2.2",
+        "gulp-clean": "~0.3.2",
+        "gulp-replace": "~0.5.4",
+        "gulp-zip": "~3.2.0",
+        "install": "~0.8.4",
+        "istanbul": "~0.4.5",
+        "jshint": "~2.9.4",
+        "mocha": "~3.4.1",
+        "mockery": "~2.0.0",
+        "mongoose": "~4.9.9",
+        "nock": "~9.0.13",
+        "node-uuid": "~1.4.8",
+        "proxyquire": "~1.8.0",
+        "rewire": "~2.5.2",
+        "rewire-global": "~1.0.11",
+        "run-sequence": "~1.2.2"
+    }
+}
