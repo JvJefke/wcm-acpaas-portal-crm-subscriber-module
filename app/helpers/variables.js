@@ -1,8 +1,10 @@
 require("rootpath")();
+var _ = require("lodash");
 
-var VariableHelper = require("app/helpers/modules/lib").Variables;
+var VariableHelper = require("@wcm/module-helper").variables;
 var packageConfig = require("../../package.json");
 var CTModel = require("app/models/contentType");
+var taxonomyModel = require("app/models/taxonomy");
 
 var variables = null;
 
@@ -19,15 +21,27 @@ var addCTID = function addCTID(vars) {
 		});
 };
 
-var init = function init() {
+var addCRMTaxonomyTag = function addCRMTaxonomyTag(vars) {
+	var taxonomyLabel = vars.subscriberConfig.variables.taxonomy;
+
+	return taxonomyModel.findOne({ "tags.safeLabel": taxonomyLabel }, { _id: 0, tags: { $elemMatch: { safeLabel: taxonomyLabel } } })
+		.then(function onSuccess(taxonomy) {
+			vars.subscriberConfig.variables.taxonomyItem = _.get(taxonomy, "tags[0]._id", null);
+
+			return vars;
+		});
+};
+
+module.exports = function getVariables() {
 	return VariableHelper.getAll(packageConfig.name, packageConfig.version)
 		.then(function onSuccess(response) {
-			if (!response) {
+			if (!response || !response.subscriberConfig || !response.contentConfig) {
 				throw "no variables available";
 			}
 
 			return addCTID(response);
 		})
+		.then(addCRMTaxonomyTag)
 		.then(function onSuccess(response) {
 			variables = Object.assign({}, response.subscriberConfig.variables, response.contentConfig.variables);
 
@@ -40,12 +54,4 @@ var init = function init() {
 			throw responseError;
 		});
 };
-
-init();
-
-module.exports = function getVariables() {
-	return variables;
-};
-
-module.exports.reload = init;
 
