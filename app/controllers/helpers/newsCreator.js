@@ -1,6 +1,6 @@
 require("rootpath")();
 
-var _ = require("ldoash");
+var _ = require("lodash");
 var R = require("ramda");
 var variablesHelper = require("../../helpers/variables");
 var ContentModel = require("app/models/content");
