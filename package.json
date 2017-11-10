@@ -2,7 +2,7 @@
   "name": "@wcm/acpaas-portal-crm-subscriber",
   "version": "1.0.0",
   "description": "Module that subscribes to the event handler CRM events. It converts the CRM tenders to news articles",
-  "main": "app/routes/index.js",
+  "main": "app",
   "scripts": {
     "test": "NODE_ENV=test ./node_modules/.bin/istanbul cover --dir ./coverage ./node_modules/.bin/_mocha -- -R spec -t 15000 --recursive --slow 2"
   },
