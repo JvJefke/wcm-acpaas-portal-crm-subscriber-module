@@ -15,7 +15,9 @@ var addCTID = function addCTID(vars) {
 		.lean()
 		.exec()
 		.then(function(ct) {
-			vars.subscriberConfig.variables.ctId = ct._id;
+			if (ct) {
+				vars.subscriberConfig.variables.ctId = ct._id;
+			}
 
 			return vars;
 		});
