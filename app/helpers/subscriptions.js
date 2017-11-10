@@ -66,8 +66,8 @@ var eventRequest = function eventRequest(variables, method, url, body) {
 		body: body || undefined,
 		json: true,
 	}, function(err, response, responseBody) {
-		if (isResponseError(response)) {
-			return d.reject(responseBody);
+		if (err || isResponseError(response)) {
+			return d.reject(err || responseBody);
 		}
 
 		d.resolve(responseBody);
@@ -121,8 +121,10 @@ module.exports.upsert = function upsert() {
 			}
 
 			variables = result;
+
+			return variables;
 		})
-		.then(check.bind(null, variables))
+		.then(check)
 		.then(function onSuccess(isSubscriptionDefined) {
 			if (isSubscriptionDefined) {
 				return update(variables);
