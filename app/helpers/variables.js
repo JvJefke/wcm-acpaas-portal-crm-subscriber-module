@@ -1,12 +1,12 @@
 require("rootpath")();
 var _ = require("lodash");
+var Q = require("q");
 
 var VariableHelper = require("@wcm/module-helper").variables;
-var packageConfig = require("../../package.json");
 var CTModel = require("app/models/contentType");
 var taxonomyModel = require("app/models/taxonomy");
 
-var variables = null;
+var packageInfo = null;
 
 var addCTID = function addCTID(vars) {
 	var ctLabel = vars.subscriberConfig.variables.contentType;
@@ -33,19 +33,21 @@ var addCRMTaxonomyTag = function addCRMTaxonomyTag(vars) {
 };
 
 module.exports = function getVariables() {
-	return VariableHelper.getAll(packageConfig.name, packageConfig.version)
+	if (packageInfo === null) {
+		return Q.reject("No package info available!");
+	}
+
+	return VariableHelper.getAll(packageInfo.name, packageInfo.version)
 		.then(function onSuccess(response) {
 			if (!response || !response.subscriberConfig || !response.contentConfig) {
-				throw "no variables available";
+				throw "No variables available!";
 			}
 
 			return addCTID(response);
 		})
 		.then(addCRMTaxonomyTag)
 		.then(function onSuccess(response) {
-			variables = Object.assign({}, response.subscriberConfig.variables, response.contentConfig.variables);
-
-			return variables;
+			return Object.assign({}, response.subscriberConfig.variables, response.contentConfig.variables);
 		})
 		.catch(function onError(responseError) {
 			console.error("Failed getting variables (eventhandler module)");
@@ -53,5 +55,13 @@ module.exports = function getVariables() {
 
 			throw responseError;
 		});
+};
+
+module.exports.set = function(info) {
+	packageInfo = info;
+};
+
+module.exports.get = function() {
+	return packageInfo;
 };
 
