@@ -1,6 +1,6 @@
 {
   "name": "@wcm/acpaas-portal-crm-subscriber",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Module that subscribes to the event handler CRM events. It converts the CRM tenders to news articles",
   "main": "app",
   "scripts": {
@@ -132,7 +132,7 @@
     "ramda": "^0.25.0",
     "request": "~2.81.0",
     "rootpath": "~0.1.2",
-    "@wcm/module-helper": "git+git@github.com:hvperdrive/wcm-module-helper.git"
+    "@wcm/module-helper": "1.0.0"
   },
   "devDependencies": {
     "@district01/eslint-config": "~1.0.0",
