@@ -15,8 +15,7 @@ var getServerUrl = function getServerUrl() {
 	return _.get(config, "multitenancy.proxyPath", null) || _.get(config, "server.domain", "");
 };
 
-var getSubscriptionBody = function getSubscriptionBody() {
-	var variables = variablesHelper();
+var getSubscriptionBody = function getSubscriptionBody(variables) {
 	var wcmApiKey = variables.wcmApikey || variables.apikey;
 
 	return {
@@ -54,9 +53,8 @@ var getSubscriptionBody = function getSubscriptionBody() {
 	};
 };
 
-var eventRequest = function eventRequest(method, url, body) {
+var eventRequest = function eventRequest(variables, method, url, body) {
 	var d = Q.defer();
-	var variables = variablesHelper();
 
 	request({
 		url: url,
@@ -68,8 +66,8 @@ var eventRequest = function eventRequest(method, url, body) {
 		body: body || undefined,
 		json: true,
 	}, function(err, response, responseBody) {
-		if (isResponseError(response)) {
-			return d.reject(responseBody);
+		if (err || isResponseError(response)) {
+			return d.reject(err || responseBody);
 		}
 
 		d.resolve(responseBody);
@@ -78,56 +76,61 @@ var eventRequest = function eventRequest(method, url, body) {
 	return d.promise;
 };
 
-var create = function create() {
-	console.log("create");
-
-	var variables = variablesHelper();
-	var body = getSubscriptionBody();
+var create = function create(variables) {
+	var body = getSubscriptionBody(variables);
 	var url = variables.apiDomain +
 		variables.namespace + "/" +
 		"subscriptions/" +
 		variables.subscriptionName;
 
-	eventRequest("POST", url, body);
+	eventRequest(variables, "POST", url, body);
 };
 
-var update = function update() {
-	console.log("update");
-
-	var variables = variablesHelper();
-	var body = getSubscriptionBody();
+var update = function update(variables) {
+	var body = getSubscriptionBody(variables);
 	var url = variables.apiDomain +
 		variables.namespace + "/" +
 		"subscriptions/" +
 		variables.subscriptionName;
 
-	return eventRequest("PUT", url, body);
+	return eventRequest(variables, "PUT", url, body);
 };
 
 // var remove = function remove() {
 
 // };
 
-var check = function check() {
-	var variables = variablesHelper();
+var check = function check(variables) {
 	var url = variables.apiDomain +
 		variables.namespace +
 		"/subscriptions";
 
-	return eventRequest("GET", url)
+	return eventRequest(variables, "GET", url)
 		.then(function onSuccess(body) {
 			return Q.when(!!_.find(body.subscriptions, { name: variables.subscriptionName }));
 		});
 };
 
 module.exports.upsert = function upsert() {
-	return check()
-		.then(function onSuccess(isSubscriptionDefined) {
-			if (isSubscriptionDefined) {
-				return update();
+	var variables = null;
+
+	return variablesHelper()
+		.then(function(result) {
+			if (!result) {
+				return Q.reject("Could not get variables");
 			}
 
-			return create();
+			variables = result;
+
+			return variables;
+		})
+		.then(check)
+		.then(function onSuccess(isSubscriptionDefined) {
+			if (isSubscriptionDefined) {
+				return update(variables);
+			}
+
+			return create(variables);
 		}, function onError(responseError) {
 			console.log(responseError);
 		});

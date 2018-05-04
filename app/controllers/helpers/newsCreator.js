@@ -1,6 +1,7 @@
 require("rootpath")();
 
 var _ = require("lodash");
+var R = require("ramda");
 var variablesHelper = require("../../helpers/variables");
 var ContentModel = require("app/models/content");
 
@@ -18,33 +19,31 @@ var stripTags = function stripTags(value) {
 	return (value || "").replace(/(<([^>]+)>)/ig, "");
 };
 
-var addPreSuffix = function addPreSuffix(value, id) {
-	var addUrl = variablesHelper().addUrl.url + "nl/opdrachten/detail/" + id;
+var addPreSuffix = function addPreSuffix(variables, value, id) {
+	var daUrl = variables.daUrl + "nl/opdrachten/detail/" + id;
 
-	return variablesHelper().contentPrefix +
+	return variables.contentPrefix +
 		value +
-		variablesHelper().contentSuffix.replace("{{da-url}}", addUrl);
+		variables.contentSuffix.replace("{{da-url}}", daUrl);
 };
 
-var prepareBody = function prepareBody(body) {
-	var id = _.get(body, "id", "");
-	var title = _.get(body, "title", "");
-	var description = _.get(body, "description", "");
+var prepareBody = R.curry(function prepareBody(variables, body) {
+	var id = R.pathOr("", ["id"], body);
+	var title = R.pathOr("", ["title"], body);
+	var description = R.pathOr("", ["description"], body);
 	var label = "CRM news " + title;
 
 	return {
 		fields: {
 			title: generateMultiLanguageField("nl", title),
-			intro: generateMultiLanguageField("nl", _.truncate(stripTags(description), { "length": 50 })),
-			body: generateMultiLanguageField("nl", addPreSuffix(description, id)),
-			banner: variablesHelper().defaultBannerImage,
-			thumbnail: variablesHelper().defaultThumbnailImage,
+			intro: generateMultiLanguageField("nl", _.truncate(stripTags(description), { "length": 200 })),
+			body: generateMultiLanguageField("nl", addPreSuffix(variables, description, id)),
 			excludeFromHome: {
 				exclude: false,
 			},
 		},
 		meta: {
-			contentType: variablesHelper().ctId,
+			contentType: variables.ctId,
 			publishDate: Date.now(),
 			label: label,
 			status: "PUBLISHED",
@@ -59,15 +58,17 @@ var prepareBody = function prepareBody(body) {
 			lastModified: Date.now(),
 			created: Date.now(),
 			taxonomy: {
-				tags: [],
+				tags: variables.taxonomyItem ? [variables.taxonomyItem] : [],
 				dataType: "taxonomy",
 				available: [],
 			},
 			slug: generateMultiLanguageField("nl", _.kebabCase(label)),
 		},
 	};
-};
+});
 
 module.exports.create = function create(body) {
-	return ContentModel.create(prepareBody(body));
+	return variablesHelper()
+		.then(prepareBody(R.__, body))
+		.then(ContentModel.create);
 };
