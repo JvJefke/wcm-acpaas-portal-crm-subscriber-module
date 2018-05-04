@@ -1,4 +1,4 @@
-# wcm-solr-module-am
+# ACPAAS Portal CRM subscriber module
 
 This module gives you the opportunity to index items in Apache Solr.
 
@@ -18,18 +18,19 @@ This module gives you the opportunity to index items in Apache Solr.
 ## Usage
 
 ### API
-There is no API available.
+
+[POST] `/acpaas-portal-subscriptions` - Endpoint to register CRM news items
+
+##### Request body
+```json
+{
+    id: "id",
+    title: "title",
+    description: "body"
+}
+```
 
 ### Implementation
-
-#### ArcGIS urls
-1. Add all the required settings  
-    1.1. Go to modules  
-    1.2. Edit the Solr module  
-    1.3. Under __Variables__ open the __Solr__  
-    1.4. Enter data for all available fields  
-    1.5. Save the module  
-2. Every project (for AM) will be indexed and updated automatically upon saving or deleting projects.
 
 ## Module development
 
