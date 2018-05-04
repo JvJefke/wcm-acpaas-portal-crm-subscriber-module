@@ -1,10 +1,7 @@
 "use strict";
 
 var gulp = require("gulp");
-var zip = require("gulp-zip");
-var clean = require("gulp-clean");
 var apidocSwagger = require("gulp-apidoc-swagger");
-var runSequence = require("run-sequence");
 var angularTemplatecache = require("gulp-angular-templatecache");
 var replace = require("gulp-replace");
 var fs = require("fs");
@@ -22,23 +19,6 @@ gulp.task("swagger", function() {
 	return gulp.src(["./swagger/output/swagger.json"])
 		.pipe(replace(/\/api\/1.0.0\//g, "/"))
 		.pipe(gulp.dest("./swagger/output/acpaas"));
-});
-
-// Copy all the necessary files into a temp folder
-gulp.task("prepareBuild", function() {
-	return gulp.src(["./app/**/*", "./public/**/*", "./package.json"], { base: "." })
-		.pipe(gulp.dest("./dist/source/" + packageConfig.name + "_" + packageConfig.version));
-});
-// Zip the content of the temporary folder an put it in the dist/zip folder
-gulp.task("executeBuild", function() {
-	return gulp.src(["./dist/source/" + packageConfig.name + "_" + packageConfig.version + "/**/*"], { base: "./dist/source/" })
-		.pipe(zip(packageConfig.name + "_" + packageConfig.version + ".zip"))
-		.pipe(gulp.dest("./dist/zip"));
-});
-// Remove the temporary source folder.
-gulp.task("finishBuild", function() {
-	return gulp.src("./dist/source", { read: false })
-		.pipe(clean());
 });
 
 gulp.task("templateCache", function() {
@@ -95,36 +75,4 @@ gulp.task("bumpMajorVersion", function() {
 	var newVersion = bumpVersion(0);
 
 	return bumpAngularModuleVersion(newVersion);
-});
-
-// Bump the patch version and then build
-gulp.task("buildPatch", function() {
-	runSequence(
-		"bumpPatchVersion",
-		"build"
-	);
-});
-// Bump the minor version and then build
-gulp.task("buildMinor", function() {
-	runSequence(
-		"bumpMinorVersion",
-		"build"
-	);
-});
-// Bump the major version and then build
-gulp.task("buildMajor", function() {
-	runSequence(
-		"bumpMajorVersion",
-		"build"
-	);
-});
-
-// build the module
-gulp.task("build", function() {
-	runSequence(
-		"templateCache",
-		"prepareBuild",
-		"executeBuild",
-		"finishBuild"
-	);
 });

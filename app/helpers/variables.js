@@ -1,10 +1,12 @@
 require("rootpath")();
+var _ = require("lodash");
+var Q = require("q");
 
-var VariableHelper = require("app/helpers/modules/lib").Variables;
-var packageConfig = require("../../package.json");
+var VariableHelper = require("@wcm/module-helper").variables;
 var CTModel = require("app/models/contentType");
+var taxonomyModel = require("app/models/taxonomy");
 
-var variables = null;
+var packageInfo = null;
 
 var addCTID = function addCTID(vars) {
 	var ctLabel = vars.subscriberConfig.variables.contentType;
@@ -13,25 +15,41 @@ var addCTID = function addCTID(vars) {
 		.lean()
 		.exec()
 		.then(function(ct) {
-			vars.subscriberConfig.variables.ctId = ct._id;
+			if (ct) {
+				vars.subscriberConfig.variables.ctId = ct._id;
+			}
 
 			return vars;
 		});
 };
 
-var init = function init() {
-	return VariableHelper.getAll(packageConfig.name, packageConfig.version)
+var addCRMTaxonomyTag = function addCRMTaxonomyTag(vars) {
+	var taxonomyLabel = vars.subscriberConfig.variables.taxonomy;
+
+	return taxonomyModel.findOne({ "tags.safeLabel": taxonomyLabel }, { _id: 0, tags: { $elemMatch: { safeLabel: taxonomyLabel } } })
+		.then(function onSuccess(taxonomy) {
+			vars.subscriberConfig.variables.taxonomyItem = _.get(taxonomy, "tags[0]._id", null);
+
+			return vars;
+		});
+};
+
+module.exports = function getVariables() {
+	if (packageInfo === null) {
+		return Q.reject("No package info available!");
+	}
+
+	return VariableHelper.getAll(packageInfo.name, packageInfo.version)
 		.then(function onSuccess(response) {
-			if (!response) {
-				throw "no variables available";
+			if (!response || !response.subscriberConfig || !response.contentConfig) {
+				throw "No variables available!";
 			}
 
 			return addCTID(response);
 		})
+		.then(addCRMTaxonomyTag)
 		.then(function onSuccess(response) {
-			variables = Object.assign({}, response.subscriberConfig.variables, response.contentConfig.variables);
-
-			return variables;
+			return Object.assign({}, response.subscriberConfig.variables, response.contentConfig.variables);
 		})
 		.catch(function onError(responseError) {
 			console.error("Failed getting variables (eventhandler module)");
@@ -41,11 +59,11 @@ var init = function init() {
 		});
 };
 
-init();
-
-module.exports = function getVariables() {
-	return variables;
+module.exports.set = function(info) {
+	packageInfo = info;
 };
 
-module.exports.reload = init;
+module.exports.get = function() {
+	return packageInfo;
+};
 
